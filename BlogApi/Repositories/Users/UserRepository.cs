@@ -89,4 +89,13 @@ public class UserRepository(BlogDbContext context) : IUserRepository
     {
         return await context.Users.AnyAsync(u => u.Email == email);
     }
+
+    public async Task<bool> EmailExistsAsync(string email, int? excludeUserId)
+    {
+        if (excludeUserId.HasValue)
+        {
+            return await context.Users.AnyAsync(u => u.Email == email && u.Id != excludeUserId.Value);
+        }
+        return await context.Users.AnyAsync(u => u.Email == email);
+    }
 }

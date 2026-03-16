@@ -13,5 +13,7 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
         entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
         
         entity.HasIndex(e => e.Name).IsUnique();
+        
+        entity.HasQueryFilter(e => e.DeletedAt == null);
     }
 }

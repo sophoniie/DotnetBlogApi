@@ -15,5 +15,7 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         entity.Property(e => e.Description).HasMaxLength(500);
         
         entity.HasIndex(e => e.Slug).IsUnique();
+        
+        entity.HasQueryFilter(e => e.DeletedAt == null);
     }
 }

@@ -15,4 +15,5 @@ public interface IUserRepository
     Task RemoveAsync(int id);
     Task RestoreAsync(int id);
     Task<bool> EmailExistsAsync(string email);
+    Task<bool> EmailExistsAsync(string email, int? excludeUserId);
 }

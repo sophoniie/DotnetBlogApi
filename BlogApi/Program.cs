@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using BlogApi.Data;
 using BlogApi.Repositories.Users;
 using BlogApi.Repositories.Articles;
+using BlogApi.Repositories.Categories;
+using BlogApi.Repositories.Tags;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +22,8 @@ builder.Services.AddDbContext<BlogDbContext>(options =>
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<ITagRepository, TagRepository>();
 
 var app = builder.Build();
 app.MapGet("/", () => "Hello World!");
