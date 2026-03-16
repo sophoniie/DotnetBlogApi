@@ -1,0 +1,7 @@
+﻿services:
+  blogapi:
+    image: blogapi
+    build:
+      context: .
+      dockerfile: BlogApi/Dockerfile
+
