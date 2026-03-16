@@ -9,6 +9,7 @@ public class User : BaseEntity
     public string Password { get; set; } = null!;
     public RoleEnum Role { get; set; } = RoleEnum.Reader;
     public bool IsActive { get; set; } = true;
+    public DateTime? DeletedAt { get; set; }
     
     public ICollection<Article> Articles { get; set; } = null!;
     
@@ -56,6 +57,18 @@ public class User : BaseEntity
     public void Enable()
     {
         IsActive = true;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void SoftDelete()
+    {
+        DeletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void Restore()
+    {
+        DeletedAt = null;
         UpdatedAt = DateTime.UtcNow;
     }
 }

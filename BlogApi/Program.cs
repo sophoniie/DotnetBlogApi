@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using BlogApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,7 @@ var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? postgr
 
 var connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}";
 
-builder.Services.AddDbContext<DbContext>(options =>
+builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseNpgsql(connectionString));
 
 var app = builder.Build();
