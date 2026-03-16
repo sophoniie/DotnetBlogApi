@@ -8,6 +8,7 @@ using BlogApi.Repositories.Users;
 using BlogApi.Repositories.Articles;
 using BlogApi.Repositories.Categories;
 using BlogApi.Repositories.Tags;
+using BlogApi.Services.Users;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,8 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<ITagRepository, TagRepository>();
+
+builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
