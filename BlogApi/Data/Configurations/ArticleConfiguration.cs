@@ -35,5 +35,7 @@ public class ArticleConfiguration : IEntityTypeConfiguration<Article>
               .WithOne(e => e.Article)
               .HasForeignKey(e => e.ArticleId)
               .OnDelete(DeleteBehavior.Cascade);
+        
+        entity.HasQueryFilter(e => e.DeletedAt == null);
     }
 }

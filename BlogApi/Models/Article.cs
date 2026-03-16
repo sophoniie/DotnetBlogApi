@@ -13,6 +13,7 @@ public class Article : BaseEntity
     public string? Thumbnail { get; set; }
     public string? MetaTitle { get; set; }
     public string? MetaDescription { get; set; }
+    public DateTime? DeletedAt { get; set; }
     
     public int AuthorId { get; set; }
     public User Author { get; set; } = null!;
@@ -26,13 +27,14 @@ public class Article : BaseEntity
     {
     }
     
-    public Article(string title, string slug, string content, User author)
+    public Article(string title, string slug, string content, User author, int categoryId)
     {
         Title = title;
         Slug = slug;
         Content = content;
         Author = author;
         AuthorId = author.Id;
+        CategoryId = categoryId;
         Status = ArticleStatusEnum.Draft;
         CreatedAt = DateTime.UtcNow;
         UpdatedAt = DateTime.UtcNow;
@@ -81,6 +83,18 @@ public class Article : BaseEntity
     {
         MetaTitle = title;
         MetaDescription = description;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void Remove()
+    {
+        DeletedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.UtcNow;
+    }
+    
+    public void Restore()
+    {
+        DeletedAt = null;
         UpdatedAt = DateTime.UtcNow;
     }
 }
