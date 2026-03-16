@@ -50,6 +50,11 @@ public class UserService(IUserRepository userRepository, IPasswordService passwo
         return user == null ? null : MapToResponse(user);
     }
     
+    public async Task<User?> FindByEmailWithPasswordAsync(string email)
+    {
+        return await userRepository.GetByEmailAsync(email);
+    }
+    
     public async Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request)
     {
         var user = await userRepository.GetByIdAsync(id);

@@ -10,12 +10,15 @@ using BlogApi.Repositories.Categories;
 using BlogApi.Repositories.Tags;
 using BlogApi.Services.Users;
 using BlogApi.Services;
+using BlogApi.Services.Token;
+using BlogApi.Services.Auth;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 var postgresSection = builder.Configuration.GetSection("Postgres");
 
+// For database
 var host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? postgresSection["Host"];
 var port = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? postgresSection["Port"];
 var database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? postgresSection["Database"];
@@ -23,6 +26,10 @@ var user = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? postgresSectio
 var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? postgresSection["Password"];
 
 var connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}";
+
+// For JWT Secret
+var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
+                   ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
 
 builder.Services.AddDbContext<BlogDbContext>(options =>
     options.UseNpgsql(connectionString));
@@ -34,6 +41,8 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
@@ -54,7 +63,7 @@ builder.Services.AddAuthentication("Bearer")
             
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes("SUPER_SECRET_KEY")) // TODO: Take the secret key from .env
+                Encoding.UTF8.GetBytes(jwtSecretKey))
         };
     });
 builder.Services.AddAuthorization();
