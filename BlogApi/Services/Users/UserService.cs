@@ -6,7 +6,7 @@ using BlogApi.Repositories.Users;
 
 namespace BlogApi.Services.Users;
 
-public class UserService(IUserRepository userRepository) : IUserService
+public class UserService(IUserRepository userRepository, IPasswordService passwordService) : IUserService
 {
     public async Task<UserResponse> CreateAsync(RegisterUserRequest request)
     {
@@ -15,10 +15,12 @@ public class UserService(IUserRepository userRepository) : IUserService
             throw new AlreadyExistsException("User", "Email");
         }
         
+        var hashedPassword = passwordService.Hash(request.Password);
+        
         var user = new User(
             request.Name,
             request.Email,
-            request.Password,
+            hashedPassword,
             request.Role ?? RoleEnum.Reader
         );
         
@@ -95,8 +97,13 @@ public class UserService(IUserRepository userRepository) : IUserService
             throw new NotFoundException("User", id);
         }
         
-        // TODO: Verify current password when password hashing is implemented
-        user.UpdatePassword(request.NewPassword);
+        if (!passwordService.Verify(request.CurrentPassword, user.Password))
+        {
+            throw new InvalidOperationException("Current password is incorrect");
+        }
+        
+        var hashedPassword = passwordService.Hash(request.NewPassword);
+        user.UpdatePassword(hashedPassword);
         
         await userRepository.UpdateAsync(user);
     }
