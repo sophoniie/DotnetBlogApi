@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Text;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -7,6 +8,7 @@ using BlogApi.Repositories.Users;
 using BlogApi.Repositories.Articles;
 using BlogApi.Repositories.Categories;
 using BlogApi.Repositories.Tags;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,32 @@ builder.Services.AddScoped<ITagRepository, TagRepository>();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
+builder.Services.AddCors();
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "blog-api",
+            
+            ValidateAudience = true,
+            ValidAudience = "blog-api",
+            
+            ValidateLifetime = true,
+            
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes("SUPER_SECRET_KEY")) // TODO: Take the secret key from .env
+        };
+    });
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
+
+app.UseCors();
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.MapGet("/", () => "Hello World!");
 app.Run();
