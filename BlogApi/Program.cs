@@ -2,7 +2,6 @@ using System.Reflection;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
-using FluentValidation.AspNetCore;
 using BlogApi.Data;
 using BlogApi.Repositories.Users;
 using BlogApi.Repositories.Articles;
@@ -18,21 +17,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 var postgresSection = builder.Configuration.GetSection("Postgres");
 
-// For database
-var host = Environment.GetEnvironmentVariable("POSTGRES_HOST") ?? postgresSection["Host"];
-var port = Environment.GetEnvironmentVariable("POSTGRES_PORT") ?? postgresSection["Port"];
-var database = Environment.GetEnvironmentVariable("POSTGRES_DB") ?? postgresSection["Database"];
-var user = Environment.GetEnvironmentVariable("POSTGRES_USER") ?? postgresSection["Username"];
-var password = Environment.GetEnvironmentVariable("POSTGRES_PASSWORD") ?? postgresSection["Password"];
+var host = builder.Configuration["Postgres:Host"] ?? throw new InvalidOperationException("Postgres:Host is not configured");
+var port = builder.Configuration["Postgres:Port"] ?? throw new InvalidOperationException("Postgres:Port is not configured");
+var database = builder.Configuration["Postgres:Database"] ?? throw new InvalidOperationException("Postgres:Database is not configured");
+var user = builder.Configuration["Postgres:Username"] ?? throw new InvalidOperationException("Postgres:Username is not configured");
+var password = builder.Configuration["Postgres:Password"] ?? throw new InvalidOperationException("Postgres:Password is not configured");
 
 var connectionString = $"Host={host};Port={port};Database={database};Username={user};Password={password}";
 
-// For JWT Secret
-var jwtSecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
-                   ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
+var jwtSecretKey = builder.Configuration["Jwt:Key"] 
+    ?? throw new InvalidOperationException("Jwt:Key is not configured");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] 
+    ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
+var jwtAudience = builder.Configuration["Jwt:Audience"] 
+    ?? throw new InvalidOperationException("Jwt:Audience is not configured");
 
 builder.Services.AddDbContext<BlogDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention());
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IArticleRepository, ArticleRepository>();
@@ -44,7 +45,8 @@ builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddControllers();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
 builder.Services.AddCors();
@@ -54,10 +56,10 @@ builder.Services.AddAuthentication("Bearer")
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = "blog-api",
+            ValidIssuer = jwtIssuer,
             
             ValidateAudience = true,
-            ValidAudience = "blog-api",
+            ValidAudience = jwtAudience,
             
             ValidateLifetime = true,
             
@@ -74,5 +76,5 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapGet("/", () => "Hello World!");
+app.MapControllers();
 app.Run();

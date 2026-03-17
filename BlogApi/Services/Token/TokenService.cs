@@ -2,18 +2,21 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using BlogApi.Models;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace BlogApi.Services.Token;
 
-public class TokenService : ITokenService
+public class TokenService(IConfiguration configuration) : ITokenService
 {
-    private readonly string _secretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
-        ?? throw new InvalidOperationException("JWT_SECRET_KEY is not configured");
-    private readonly string _issuer = Environment.GetEnvironmentVariable("JWT_ISSUER") ?? "blog-api";
-    private readonly string _audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE") ?? "blog-api";
+    private readonly string _secretKey = configuration["Jwt:Key"] 
+        ?? throw new InvalidOperationException("Jwt:Key is not configured");
+    private readonly string _issuer = configuration["Jwt:Issuer"] 
+        ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
+    private readonly string _audience = configuration["Jwt:Audience"] 
+        ?? throw new InvalidOperationException("Jwt:Audience is not configured");
     private readonly int _expirationMinutes = int.TryParse(
-        Environment.GetEnvironmentVariable("JWT_EXPIRATION_MINUTES"), out var minutes) 
+        configuration["Jwt:ExpirationMinutes"], out var minutes) 
         ? minutes : 30;
 
     public string GenerateToken(User user)
